@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="https://cdn.jsdelivr.net/npm/webcamjs@1.0.26/webcam.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.1.0/dist/tf.min.js"></script>
+    <script src="https://unpkg.com/@microsoft/customvision-tfjs"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.2/Tone.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+        integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+</head>
+
+<body>
+    <div class="container" style="padding-top:20px">
+        <div class="row">
+            <div class="col-md-8">
+                <h2>Posture Monitoring </h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8" style="background-color:#f0f0f0;padding:0px">
+                <div style="height:25px;width:10%;background-color:#808080;radius:2px;" id="bar"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8" style="background-color:#fafafa;padding-left:0px;padding-top:20px">
+                <div style="font-size:20px;color:red;height:30px" id="label"></div>
+                <div id="container"></div>
+                <div id="my_camera" style="width:32px; height:24px;margin:20px"></div>
+               
+            </div>
+
+        </div>
+    </div>
+
+    <script language="javascript">
+        window.onload = function () {
+
+            function playSound() {
+                const osc = new Tone.Oscillator(440, "sine").toDestination().start();
+                window.setTimeout(function () { osc.stop() }, 200)
+            }
+
+            function take_snapshot() {
+                Webcam.snap(function (data_uri) {
+                    document.getElementById('container').innerHTML = '<img id="myimage" style="width:80%"  src="' + data_uri + '"/>';
+                    //strangely some delay is required (atleast on my machine), otherwise model.executeAsync fails
+                    window.setTimeout(function () {
+                        var image = document.getElementById('myimage');
+                        model.executeAsync(image).then((result) => {
+                            console.log(JSON.stringify(result[0]))
+                            var reading = parseInt(result[0][0] * 100).toString();
+                            if (reading < 50) {
+                                reading = 0;
+                                document.getElementById("bar").style.width = "1%";
+                            }
+                            else {
+                                document.getElementById("bar").style.width = ((reading - 50) * 2).toString() + "%";
+                            }
+
+                            if (result[0][0] > 0.50) {
+                                if (repeat > 5) {
+                                    document.getElementById('label').innerText = "⏰ POSTURE ALARM";
+                                    playSound()
+                                }
+                                else {
+                                    repeat = repeat + 1;
+                                }
+                            }
+                            else {
+                                document.getElementById('label').innerText = "✔️ POSTURE OK"
+                                repeat = 0;
+                            }
+
+                            take_snapshot()
+
+                        })
+                    }, 1000)
+
+                });
+            }
+
+            var model = new cvstfjs.ClassificationModel();
+            var repeat = 0;
+
+            Webcam.attach('#my_camera');
+            Webcam.set({
+                width: 320,
+                height: 240,
+                dest_width: 320,
+                dest_height: 240,
+            })
+
+            model.loadModelAsync('model.json').then(() => {
+                window.setTimeout(function () {
+                    take_snapshot();
+                }, 1000)
+            })
+        }
+
+
+
+
+
+
+
+    </script>
+</body>
+
+</html>
