@@ -1,7 +1,7 @@
 # Posture Detection inside browser using customvision.ai , tfjs and webcamjs
 ![pusture.png](posture.png)
 
-This is the sample code for my experiment on creating a posture detection system. It uses a webcam attached on top of a desktop monitor to continously monitor user's posture. If the user is slouching or tilting forward, the code generates an alarm.
+This is the sample code for my experiment on creating a posture detection system. It uses a webcam attached on top of a desktop monitor to continuously  monitor user's posture. If the user is slouching or tilting forward, the code generates an alarm.
 
 This code should work in any modern browser. A faster computer should ensure smoother performance.
 
