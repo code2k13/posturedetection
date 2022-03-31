@@ -94,7 +94,7 @@
                 dest_height: 240,
             })
 
-            model.loadModelAsync('model.json').then(() => {
+            model.loadModelAsync('./model.json').then(() => {
                 window.setTimeout(function () {
                     take_snapshot();
                 }, 1000)
